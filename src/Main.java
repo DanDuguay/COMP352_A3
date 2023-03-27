@@ -13,8 +13,20 @@ public class Main
 
         Entry<String>[] entryArray = new Entry[]{e1,e2,e3,e4,e5,e6,e7};
 
-        arrayHeap.heap = arrayHeap.heapify(entryArray);
+        System.out.println("current State: " +arrayHeap.getState());
+        arrayHeap.insert(e1);
+        arrayHeap.insert(e3);
+        arrayHeap.insert(e2);
+        arrayHeap.insert(e6);
+        arrayHeap.insert(e2);
+        arrayHeap.insert(e4);
+        arrayHeap.insert(e5);
+        arrayHeap.insert(e7);
+        arrayHeap.insert(e4);
 
+        arrayHeap.toString();
+        System.out.println("===========================================================");
+        arrayHeap.toggle();
         arrayHeap.toString();
     }
 }

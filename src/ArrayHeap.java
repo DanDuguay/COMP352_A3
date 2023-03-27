@@ -13,6 +13,7 @@ public class ArrayHeap<V>
         this.size = 5;
         this.isMinHeap = true;
         heap = new Entry[size];
+        this.lastElement = -1;
         //heap = heapify(heap);
     }
 
@@ -21,12 +22,18 @@ public class ArrayHeap<V>
         this.size = size;
         this.isMinHeap = isMinHeap;
         heap = new Entry[size];
+        this.lastElement = -1;
         //heap = heapify(heap);
     }
 
-    public boolean getState()
+    public  int getLastElement() { return this.lastElement;}
+    public void setLastElement(int newValue) { this.lastElement = newValue;}
+
+    public String getState()
     {
-        return isMinHeap;
+        if (isMinHeap)
+            return "minHeap";
+        return "maxHeap";
     }
 
     public void setState(boolean isMinHeap)
@@ -37,7 +44,7 @@ public class ArrayHeap<V>
     public void toggle()
     {
         this.isMinHeap = !isMinHeap;
-        heapify(this.heap);
+        heapify();
     }
 
     public boolean isFull() { return (size-1 == lastElement);}
@@ -69,11 +76,11 @@ public class ArrayHeap<V>
     public int heapComparator(Entry<V> e1, Entry<V> e2, boolean isMinHeap)
     {
         int key1 = e1.getKey();
-        int key2 = e1.getKey();
+        int key2 = e2.getKey();
 
         if (isMinHeap)
         {
-            if(key1 < key2)
+            if(key1 > key2)
                 return 1;
             if (key1 == key2)
                 return 0;
@@ -82,7 +89,7 @@ public class ArrayHeap<V>
         }
         else
         {
-            if (key1 < key2)
+            if (key1 > key2)
                 return -1;
             if (key1 == key2)
                 return 0;
@@ -97,40 +104,40 @@ public class ArrayHeap<V>
     protected boolean hasLeft(Entry<V> e) { return left(e) < size();}
     protected boolean hasRight(Entry<V> e) { return right(e) < size();}
 
-    protected void swap(Entry<V> e1, Entry<V> e2)
+    protected void swap(int e1Position, int e2Position)
     {
-        Entry<V> temp = e1;
-        e1 = new Entry<V>(e2);
-        e2 = new Entry<V>(temp);
+        Entry<V> temp = new Entry<>(heap[e1Position]);
+        heap[e1Position] = new Entry<>(heap[e2Position]);
+        heap[e2Position] = new Entry<>(temp);
 
     }
 
-    protected void upHeap(Entry<V> e)
+    protected void upHeap(int ePosition)
     {
-        while (e.getPosition() > 0)
+        while (ePosition > 0)
         {
-            Entry<V> p = heap[parent(e)];
-            if (heapComparator(e, p, getState()) >= 0) break;
-            swap(e, p);
+            int pPosition = parent(heap[ePosition]);
+            if (heapComparator(heap[ePosition], heap[pPosition], isMinHeap) >= 0) break;
+            swap(ePosition, pPosition);
             //e.setPosition(p.getPosition());
         }
     }
 
-    protected void downHeap(Entry<V> e)
+    protected void downHeap(int ePosition)
     {
-        while (hasLeft(e))
+        while (hasLeft(heap[ePosition]))
         {
-            int leftIndex = left(e);
+            int leftIndex = left(heap[ePosition]);
             int childToSwapIndex = leftIndex;
-            if (hasRight(e))
+            if (hasRight(heap[ePosition]))
             {
-                int rightIndex = right(e);
+                int rightIndex = right(heap[ePosition]);
                 if (heapComparator(heap[leftIndex], heap[rightIndex], isMinHeap) > 0)
                     childToSwapIndex = rightIndex;
             }
-            if (heapComparator(heap[childToSwapIndex], heap[e.getPosition()], isMinHeap) >=0) break;
-            swap(e,heap[childToSwapIndex]);
-            //e.setPosition(heap[childToSwapIndex].getPosition());
+            if (heapComparator(heap[childToSwapIndex], heap[ePosition], isMinHeap) >=0) break;
+            swap(ePosition,childToSwapIndex);
+            //heap[ePosition].setPosition(heap[childToSwapIndex].getPosition());
         }
     }
 
@@ -142,6 +149,19 @@ public class ArrayHeap<V>
         lastElement++;
         Entry<V> newest = new Entry<>(key,value,lastElement);
         heap[lastElement] = newest;
+        upHeap(newest.getPosition());
+        return newest;
+    }
+    public Entry<V> insert(Entry e)
+    {
+        if(isFull())
+            heap= increaseHeapSize();
+
+        lastElement++;
+        e.setPosition(lastElement);
+        Entry<V> newest = new Entry<>(e);
+        heap[lastElement] = newest;
+        upHeap(newest.getPosition());
         return newest;
     }
 
@@ -150,12 +170,11 @@ public class ArrayHeap<V>
         if(isEmpty()) return null;
         return heap[0];
     }
-    protected Entry<V>[] heapify(Entry<V>[] heap)
+    protected void heapify()
     {
-        int startingIndex = parent(heap[size()-1]);
+        int startingIndex = parent(heap[lastElement]);
         for (int i = startingIndex; i >= 0; i--)
-            downHeap(heap[i]);
-        return heap;
+            downHeap(i);
     }
 
     @Override
